@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Man's Sky — Recetas de Refinería</title>
+<style>
+  :root {
+    --bg:        #080D18;
+    --bg-card:   #0D1525;
+    --bg-card2:  #111D35;
+    --border:    #1E3050;
+    --gold:      #C8A84B;
+    --gold-dim:  #8A7035;
+    --text:      #D4CAA8;
+    --text-dim:  #7A8FA8;
+    --small-c:   #3CB35C;
+    --medium-c:  #4A90D9;
+    --large-c:   #9B6AD9;
+    --arrow:     #5A7A9A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(180deg, #050A14 0%, #090F1E 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .count-badge {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+
+  /* ── FILTERS ── */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filter-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  /* Botones de tipo */
+  .type-buttons { display: flex; gap: 4px; }
+  .type-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .type-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+  .type-btn.active { border-color: var(--gold); color: var(--gold); background: #1A1500; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot-small  { background: var(--small-c); }
+  .dot-medium { background: var(--medium-c); }
+  .dot-large  { background: var(--large-c); }
+
+  /* Selectores de material */
+  .material-select { position: relative; width: 210px; }
+  .mat-input {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 28px 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    width: 100%;
+    outline: none;
+  }
+  .mat-input:focus { border-color: var(--gold-dim); }
+  .mat-input::placeholder { color: var(--text-dim); }
+  .mat-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #0D1828;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .mat-dropdown.open { display: block; }
+  .mat-option {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+  }
+  .mat-option:hover { background: var(--bg-card2); }
+  .mat-option.selected { color: var(--gold); }
+  .mat-option.highlighted { background: var(--bg-card2); outline: 1px solid var(--gold-dim); color: var(--gold); }
+  .mat-option img { width: 22px; height: 22px; object-fit: contain; }
+  .mat-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 2px;
+    display: none;
+  }
+  .mat-clear:hover { color: var(--text); }
+
+  /* Buscador texto */
+  .search-input {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    width: 210px;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--gold-dim); }
+  .search-input::placeholder { color: var(--text-dim); }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+    padding: 16px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: var(--gold-dim); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .op-name {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex: 1;
+  }
+  .type-badge {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-small  { background: rgba(60,179,92,0.15);  color: var(--small-c);  border: 1px solid rgba(60,179,92,0.3); }
+  .badge-medium { background: rgba(74,144,217,0.15); color: var(--medium-c); border: 1px solid rgba(74,144,217,0.3); }
+  .badge-large  { background: rgba(155,106,217,0.15);color: var(--large-c);  border: 1px solid rgba(155,106,217,0.3); }
+
+  .card-body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .arrow-area {
+    color: var(--arrow);
+    font-size: 1.2rem;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  .material {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .mat-icon {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  .mat-icon-placeholder {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    background: var(--bg-card2);
+    border-radius: 4px;
+  }
+  .mat-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .mat-name {
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mat-qty { font-size: 0.7rem; color: var(--text-dim); }
+
+  .output-section { display: flex; align-items: center; flex-shrink: 0; }
+  .output-section .mat-name { font-weight: 600; color: var(--gold); }
+  .output-section .mat-qty  { color: var(--gold-dim); }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+    padding-top: 7px;
+    margin-top: 2px;
+  }
+  .time-label { font-size: 0.7rem; color: var(--text-dim); }
+  .time-value { font-size: 0.75rem; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* No results */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+  .empty h2 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+
+  /* Paginación */
+  .pagination {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 0 4px;
+  }
+  .page-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+  .page-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+  .page-btn:disabled { opacity: 0.3; cursor: default; }
+  .page-info {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    padding: 0 8px;
+    min-width: 120px;
+    text-align: center;
+  }
+
+  /* Botones de ordenación */
+  .sort-buttons { display: flex; gap: 4px; }
+  .sort-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .sort-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+  .sort-btn.active { border-color: var(--gold); color: var(--gold); background: #1A1500; }
+  .sort-arrow { font-size: 0.7rem; opacity: 0.7; }
+
+  /* Botón de cadena en tarjeta */
+  .chain-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    transition: all 0.15s;
+    margin-right: auto;
+  }
+  .chain-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  /* Modal overlay */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .chain-modal {
+    background: #090E1C;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 100%;
+    max-width: min(88vw, 900px);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+  }
+  .modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+    background: #060C18;
+    border-radius: 10px 10px 0 0;
+  }
+  .modal-title { color: var(--gold); font-size: 0.95rem; font-weight: 600; }
+  .modal-close {
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    font-size: 0.9rem; padding: 3px 8px; border-radius: 4px;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--gold-dim); }
+  .modal-body { overflow: auto; padding: 16px 20px 20px; flex: 1; }
+
+  /* Árbol visual de cadena (canvas posicionado) */
+  .tree-canvas-wrap { overflow-x: auto; padding-bottom: 4px; }
+  .tree-canvas { position: relative; }
+  .tree-svg { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+  .tree-node-card {
+    position: absolute;
+    width: 160px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px 7px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    transition: border-color 0.15s;
+  }
+  .tree-node-card:hover { border-color: var(--gold-dim); }
+  .tree-node-root     { border-color: var(--gold) !important; background: #0D1100 !important; }
+  .tree-node-raw      { border-color: rgba(60,179,92,0.45); background: rgba(60,179,92,0.07); }
+  .tree-node-cycle    { border-color: var(--gold-dim); opacity: 0.75; }
+  .tree-node-collapsed { border-color: rgba(200,168,75,0.25); border-style: dashed; cursor: pointer; }
+  .tree-node-collapsed:hover { border-color: var(--gold) !important; border-style: solid; }
+  [data-node-id] { cursor: pointer; }
+  .node-toggle { font-size: 0.58rem; color: var(--gold-dim); margin-left: auto; flex-shrink: 0; }
+  .tree-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+  .tree-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; image-rendering: pixelated; }
+  .tree-name { font-size: 0.78rem; color: var(--text); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tree-qty  { font-size: 0.68rem; color: var(--text-dim); }
+  .tree-foot { display: flex; align-items: center; gap: 5px; overflow: hidden; }
+  .tree-op   { font-size: 0.6rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .chain-badge { font-size: 0.58rem; padding: 1px 5px; border-radius: 6px; font-weight: 600; flex-shrink: 0; }
+  .chain-base  { background: rgba(60,179,92,0.12); color: var(--small-c); border: 1px solid rgba(60,179,92,0.25); }
+  .chain-cycle-lbl { font-size: 0.62rem; color: var(--gold-dim); flex-shrink: 0; }
+  .chain-mat-name { font-size: 0.8rem; color: var(--small-c); }
+  .chain-mat-qty  { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; }
+
+  /* Resumen de materiales base */
+  .raw-summary {
+    margin-top: 14px; background: var(--bg-card2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 14px;
+  }
+  .raw-summary-title {
+    font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 10px;
+  }
+  .raw-list { display: flex; flex-wrap: wrap; gap: 7px; }
+  .raw-item {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 9px;
+  }
+  .raw-item .chain-mat-name { color: var(--small-c); font-size: 0.8rem; }
+  .raw-item .chain-mat-qty { color: var(--text-dim); font-size: 0.72rem; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>NMS &#x2014; Recetas de Refiner&#xED;a</h1>
+    <span class="count-badge" id="countBadge">Cargando...</span>
+  </div>
+  <div class="filters">
+
+    <div class="filter-group">
+      <span class="filter-label">Tipo de refiner&#xED;a</span>
+      <div class="type-buttons">
+        <button class="type-btn active" data-type="all">Todas</button>
+        <button class="type-btn" data-type="peque&#xF1;a">
+          <span class="dot dot-small"></span>Peque&#xF1;a
+        </button>
+        <button class="type-btn" data-type="mediana">
+          <span class="dot dot-medium"></span><span class="dot dot-medium"></span>Mediana
+        </button>
+        <button class="type-btn" data-type="grande">
+          <span class="dot dot-large"></span><span class="dot dot-large"></span><span class="dot dot-large"></span>Grande
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Material de entrada</span>
+      <div class="material-select" id="inputSel">
+        <input class="mat-input" type="text" placeholder="Buscar ingrediente..." id="inputSearch" autocomplete="off">
+        <button class="mat-clear" id="inputClear" title="Limpiar">&#x2715;</button>
+        <div class="mat-dropdown" id="inputDropdown"></div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Material de salida</span>
+      <div class="material-select" id="outputSel">
+        <input class="mat-input" type="text" placeholder="Buscar resultado..." id="outputSearch" autocomplete="off">
+        <button class="mat-clear" id="outputClear" title="Limpiar">&#x2715;</button>
+        <div class="mat-dropdown" id="outputDropdown"></div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Buscar</span>
+      <input class="search-input" type="text" id="textSearch" placeholder="Nombre, operaci&#xF3;n...">
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Ordenar por</span>
+      <div class="sort-buttons">
+        <button class="sort-btn" id="sortTimeBtn">&#x23F1; Tiempo <span class="sort-arrow" id="sortTimeArrow"></span></button>
+        <button class="sort-btn" id="sortQtyBtn">&#x2B06; Salida <span class="sort-arrow" id="sortQtyArrow"></span></button>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<!-- Modal cadena de producción -->
+<div class="modal-overlay" id="chainModal">
+  <div class="chain-modal">
+    <div class="modal-header">
+      <span class="modal-title" id="chainTitle">Cadena de producci&#xF3;n</span>
+      <button class="modal-close" id="chainClose">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="chainBody"></div>
+  </div>
+</div>
+
+<script>
+const RECIPES      = [{"operation": "Nanite Extraction", "inputs": [{"name": "Salvaged Data", "code": "BP_SALVAGE", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 15}, "time": "5m 20s", "refinery_type": "pequeña"}, {"operation": "Calcite Transmutation", "inputs": [{"name": "Living Pearl", "code": "CLAMPEARL", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 100}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Biological Purge", "inputs": [{"name": "Hypnotic Eye", "code": "EYEBALL", "qty": 1}], "output": {"name": "Living Slime", "code": "SPACEGUNK4", "qty": 50}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Doom Cycling", "inputs": [{"name": "Hadal Core", "code": "FISHCORE", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 50}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Sulphur Release", "inputs": [{"name": "Crystal Sulphide", "code": "VENTGEM", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 50}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "NOT RECOMMENDED", "inputs": [{"name": "Larval Core", "code": "FIENDCORE", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 50}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Algal Processing", "inputs": [{"name": "Cyto-phosphate", "code": "WATERPLANT", "qty": 1}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Alchemical Construction", "inputs": [{"name": "Hexite", "code": "SPECIAL_POOP", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Polish Crystals", "inputs": [{"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 40}], "output": {"name": "Glass", "code": "FARMPROD3", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Metal Restructuring", "inputs": [{"name": "Gold", "code": "ASTEROID2", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Reality Warping", "inputs": [{"name": "Platinum", "code": "ASTEROID3", "qty": 35}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Reality Filtering", "inputs": [{"name": "Pugneum", "code": "ROBOT1", "qty": 25}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 1}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Assisted Decomposition", "inputs": [{"name": "Mordite", "code": "CREATURE1", "qty": 3}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Inefficient Burn", "inputs": [{"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 1}, "time": "20s", "refinery_type": "pequeña"}, {"operation": "Condense Di-hydrogen", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 30}], "output": {"name": "Di-hydrogen Jelly", "code": "JELLY", "qty": 1}, "time": "2m", "refinery_type": "pequeña"}, {"operation": "Di-hydrogen Cycling", "inputs": [{"name": "Di-hydrogen Jelly", "code": "JELLY", "qty": 1}], "output": {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 40}, "time": "16m 40s", "refinery_type": "pequeña"}, {"operation": "Ionise Mineral", "inputs": [{"name": "Cobalt", "code": "CAVE1", "qty": 2}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Deionise Mineral", "inputs": [{"name": "Ionised Cobalt", "code": "CAVE2", "qty": 1}], "output": {"name": "Cobalt", "code": "CAVE1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Release Carbon", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Condense Carbon", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 2}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, "time": "45s", "refinery_type": "pequeña"}, {"operation": "Process Sodium", "inputs": [{"name": "Sodium", "code": "CATALYST1", "qty": 2}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "1m 40s", "refinery_type": "pequeña"}, {"operation": "Free Sodium", "inputs": [{"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Sodium", "code": "CATALYST1", "qty": 2}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Extract Metallic Elements", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Magnetise Metal", "inputs": [{"name": "Pure Ferrite", "code": "LAND2", "qty": 2}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Demagnetise Metal", "inputs": [{"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Pure Ferrite", "code": "LAND2", "qty": 2}, "time": "40s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Cadmium", "code": "RED2", "qty": 2}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}, "time": "1m 10s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Indium", "code": "BLUE2", "qty": 2}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "25s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Emeril", "code": "GREEN2", "qty": 2}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 3}, "time": "40s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Copper", "code": "YELLOW2", "qty": 2}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Activated Cadmium", "code": "EX_RED", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 2}, "time": "50s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Activated Indium", "code": "EX_BLUE", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Activated Emeril", "code": "EX_GREEN", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 3}, "time": "40s", "refinery_type": "pequeña"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Activated Copper", "code": "EX_YELLOW", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Concentrate Salt", "inputs": [{"name": "Salt", "code": "WATER1", "qty": 2}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Salt Production", "inputs": [{"name": "Chlorine", "code": "WATER2", "qty": 1}], "output": {"name": "Salt", "code": "WATER1", "qty": 2}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Gas Transfer", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 3}], "output": {"name": "Radon", "code": "GAS2", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Gas Transfer", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 3}], "output": {"name": "Nitrogen", "code": "GAS3", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Gas Transfer", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 3}], "output": {"name": "Sulphurine", "code": "GAS1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Recycle Waste Materials", "inputs": [{"name": "Residual Goop", "code": "SPACEGUNK1", "qty": 1}], "output": {"name": "Viscous Fluids", "code": "SPACEGUNK5", "qty": 1}, "time": "2m 30s", "refinery_type": "pequeña"}, {"operation": "Recycle Waste Materials", "inputs": [{"name": "Runaway Mould", "code": "SPACEGUNK2", "qty": 5}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 1}, "time": "2m 30s", "refinery_type": "pequeña"}, {"operation": "Recycle Waste Materials", "inputs": [{"name": "Rusted Metal", "code": "SPACEGUNK3", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 2}, "time": "2m 40s", "refinery_type": "pequeña"}, {"operation": "Recycle Waste Materials", "inputs": [{"name": "Living Slime", "code": "SPACEGUNK4", "qty": 1}], "output": {"name": "Runaway Mould", "code": "SPACEGUNK2", "qty": 1}, "time": "2m 30s", "refinery_type": "pequeña"}, {"operation": "Recycle Waste Materials", "inputs": [{"name": "Viscous Fluids", "code": "SPACEGUNK5", "qty": 1}], "output": {"name": "Living Slime", "code": "SPACEGUNK4", "qty": 1}, "time": "2m 30s", "refinery_type": "pequeña"}, {"operation": "Tritium Cycling", "inputs": [{"name": "Tritium", "code": "ROCKETSUB", "qty": 5}], "output": {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Burn Plantlife", "inputs": [{"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Burn Plantlife", "inputs": [{"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Burn Plantlife", "inputs": [{"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Burn Plantlife", "inputs": [{"name": "Solanium", "code": "PLANT_HOT", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Burn Plantlife", "inputs": [{"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 1}], "output": {"name": "Carbon", "code": "FUEL1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Extract Organic Sodium", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}], "output": {"name": "Sodium", "code": "CATALYST1", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Extract Micro-Bubbles", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 1}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Organic Reassembly", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 3}], "output": {"name": "Mordite", "code": "CREATURE1", "qty": 2}, "time": "3m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Aronium", "code": "ALLOY1", "qty": 1}], "output": {"name": "Silver", "code": "ASTEROID1", "qty": 250}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}], "output": {"name": "Silver", "code": "ASTEROID1", "qty": 250}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Herox", "code": "ALLOY3", "qty": 1}], "output": {"name": "Silver", "code": "ASTEROID1", "qty": 250}, "time": "4m 10s", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Lemmium", "code": "ALLOY4", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 125}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Magno-gold", "code": "ALLOY5", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 125}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Grantine", "code": "ALLOY6", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 125}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Geodesite", "code": "ALLOY7", "qty": 1}], "output": {"name": "Platinum", "code": "ASTEROID3", "qty": 250}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Extreme Alloy Separation", "inputs": [{"name": "Iridesite", "code": "ALLOY8", "qty": 1}], "output": {"name": "Platinum", "code": "ASTEROID3", "qty": 250}, "time": "5m", "refinery_type": "pequeña"}, {"operation": "Salt Crystal Polishing", "inputs": [{"name": "Cyto-phosphate", "code": "WATERPLANT", "qty": 50}, {"name": "Salt", "code": "WATER1", "qty": 50}], "output": {"name": "Glass", "code": "FARMPROD3", "qty": 1}, "time": "20s", "refinery_type": "mediana"}, {"operation": "Alchemical Construction", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Hexite", "code": "SPECIAL_POOP", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Alchemical Construction", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Residual Goop", "code": "SPACEGUNK1", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Transmutation", "inputs": [{"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Silver", "code": "ASTEROID1", "qty": 1}], "output": {"name": "Platinum", "code": "ASTEROID3", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Harness Energy", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 1}, {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 2}, "time": "10s", "refinery_type": "mediana"}, {"operation": "Sulphur Injection", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}], "output": {"name": "Solanium", "code": "PLANT_HOT", "qty": 1}, "time": "40s", "refinery_type": "mediana"}, {"operation": "Catalyse Radiation", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 1}, {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 1}, "time": "40s", "refinery_type": "mediana"}, {"operation": "Organic Fusion", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}], "output": {"name": "Ammonia", "code": "TOXIC1", "qty": 1}, "time": "40s", "refinery_type": "mediana"}, {"operation": "Rapid Formation / Evaporation", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Salt", "code": "WATER1", "qty": 1}, "time": "20s", "refinery_type": "mediana"}, {"operation": "Assisted Decomposition", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 1}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, "time": "20s", "refinery_type": "mediana"}, {"operation": "Organic Reassembly", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Mordite", "code": "CREATURE1", "qty": 1}, "time": "20s", "refinery_type": "mediana"}, {"operation": "Carbonise Metal", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Carbonise Metal", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 2}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Carbonise Metal", "inputs": [{"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 2}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Carbonise Metal", "inputs": [{"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 3}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Di-hydrogen Cycling", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 1}], "output": {"name": "Deuterium", "code": "LAUNCHSUB2", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Oxidise Metal", "inputs": [{"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Rusted Metal", "code": "SPACEGUNK3", "qty": 2}, "time": "1m 40s", "refinery_type": "mediana"}, {"operation": "Oxidise Metal", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Rusted Metal", "code": "SPACEGUNK3", "qty": 1}, "time": "1m 40s", "refinery_type": "mediana"}, {"operation": "Oxygenate Carbon", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 2}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 5}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Oxygenate Carbon", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 2}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 6}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Oxygenate Sodium", "inputs": [{"name": "Sodium", "code": "CATALYST1", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Oxygenate Sodium", "inputs": [{"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Catalyse Carbon", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Catalyse Carbon", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Advanced Carbon Processing", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Dioxite", "code": "COLD1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Advanced Carbon Processing", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Dioxite", "code": "COLD1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Anomaly / Organic Hybridisation", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Mordite", "code": "CREATURE1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Anomaly / Organic Hybridisation", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Mordite", "code": "CREATURE1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Sentinel Catalysation", "inputs": [{"name": "Sodium", "code": "CATALYST1", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Sentinel Catalysation", "inputs": [{"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Runaway Decomposition", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 2}, {"name": "Mordite", "code": "CREATURE1", "qty": 1}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Runaway Decomposition", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}, {"name": "Mordite", "code": "CREATURE1", "qty": 1}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Fertiliser Synthesis", "inputs": [{"name": "Sodium", "code": "CATALYST1", "qty": 2}, {"name": "Mordite", "code": "CREATURE1", "qty": 1}], "output": {"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Fertiliser Synthesis", "inputs": [{"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, {"name": "Mordite", "code": "CREATURE1", "qty": 1}], "output": {"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Matter Expansion", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 2}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Pure Ferrite", "code": "LAND2", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Matter Expansion", "inputs": [{"name": "Pure Ferrite", "code": "LAND2", "qty": 2}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Matter Expansion", "inputs": [{"name": "Magnetised Ferrite", "code": "LAND3", "qty": 3}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Expansion", "inputs": [{"name": "Cadmium", "code": "RED2", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Cadmium", "code": "RED2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Expansion", "inputs": [{"name": "Indium", "code": "BLUE2", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Indium", "code": "BLUE2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Expansion", "inputs": [{"name": "Emeril", "code": "GREEN2", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Emeril", "code": "GREEN2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Expansion", "inputs": [{"name": "Copper", "code": "YELLOW2", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Copper", "code": "YELLOW2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 1}, {"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 1}], "output": {"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 1}, {"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 1}], "output": {"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 1}, {"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 1}], "output": {"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 1}, {"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 1}], "output": {"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 1}, {"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 1}], "output": {"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 1}, {"name": "Solanium", "code": "PLANT_HOT", "qty": 1}], "output": {"name": "Solanium", "code": "PLANT_HOT", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Efficient Salt Evaporation", "inputs": [{"name": "Salt", "code": "WATER1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 2}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 5}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chlorine Expansion", "inputs": [{"name": "Chlorine", "code": "WATER2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 2}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 6}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Efficient Cobalt Ionisation", "inputs": [{"name": "Cobalt", "code": "CAVE1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 2}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 5}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Efficient Cobalt Ionisation", "inputs": [{"name": "Ionised Cobalt", "code": "CAVE2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 2}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 6}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic / Anomaly Synthesis", "inputs": [{"name": "Mordite", "code": "CREATURE1", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Mineral Alchemy", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Mineral Alchemy", "inputs": [{"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Mineral Alchemy", "inputs": [{"name": "Platinum", "code": "ASTEROID3", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 10}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Transfer", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Radon", "code": "GAS2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Transfer", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Nitrogen", "code": "GAS3", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Transfer", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Sulphurine", "code": "GAS1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Radon", "code": "GAS2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Nitrogen", "code": "GAS3", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Sulphurine", "code": "GAS1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Bonded Cobalt Extraction", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Bonded Chlorine Extraction", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Oxygenate Microbes", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Pugneum Washing", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Pugneum Washing", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Extract Organic Sodium", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 1}], "output": {"name": "Sodium", "code": "CATALYST1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Release Captured Oxygen", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Feed Microbes", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 2}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Harness Organic Nitrogren", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Harness Organic Nitrogren", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Feed Microbes", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Extract Organic Sodium", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Sodium", "code": "CATALYST1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Release Captured Oxygen", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Feed Microbes", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Harness Organic Nitrogren", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Harness Organic Nitrogren", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Feed Microbes", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Ionise Bulbs", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Cobalt", "code": "CAVE1", "qty": 1}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Dissolve Natural Salts", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Ionise Bulbs", "inputs": [{"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 1}], "output": {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Dissolve Natural Salts", "inputs": [{"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Chlorine", "code": "WATER2", "qty": 1}], "output": {"name": "Chlorine", "code": "WATER2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Pugneum Alchemy", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Feed Microbes", "inputs": [{"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, {"name": "Mordite", "code": "CREATURE1", "qty": 1}], "output": {"name": "Condensed Carbon", "code": "FUEL2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Indium", "code": "BLUE2", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Cadmium", "code": "RED2", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Emeril", "code": "GREEN2", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Copper", "code": "YELLOW2", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Cadmium", "code": "RED2", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Emeril", "code": "GREEN2", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Copper", "code": "YELLOW2", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Indium", "code": "BLUE2", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Cadmium", "code": "EX_RED", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Indium", "code": "EX_BLUE", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 8}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Emeril", "code": "EX_GREEN", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 6}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Copper", "code": "EX_YELLOW", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Cadmium", "code": "EX_RED", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Indium", "code": "EX_BLUE", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 8}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Emeril", "code": "EX_GREEN", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 6}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Copper", "code": "EX_YELLOW", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 2}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Solanium", "code": "PLANT_HOT", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 2}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Ammonia", "code": "TOXIC1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 2}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 2}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Dioxite", "code": "COLD1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 2}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 2}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Phosphorus", "code": "HOT1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 2}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 2}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Ammonia", "code": "TOXIC1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 2}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 2}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Dioxite", "code": "COLD1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 2}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 2}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Phosphorus", "code": "HOT1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 2}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Floral Titration", "inputs": [{"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 2}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Ammonia", "code": "TOXIC1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Floral Titration", "inputs": [{"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 2}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Dioxite", "code": "COLD1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Floral Titration", "inputs": [{"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 2}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Floral Titration", "inputs": [{"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 2}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Floral Titration", "inputs": [{"name": "Solanium", "code": "PLANT_HOT", "qty": 2}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Phosphorus", "code": "HOT1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Floral Titration", "inputs": [{"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 2}, {"name": "Salt", "code": "WATER1", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Metal Enrichment", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Radon", "code": "GAS2", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "2m", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Metal Enrichment", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "2m", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Paraffinium", "code": "LUSH1", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Metal Enrichment", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 3}, "time": "2m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 1}, {"name": "Nitrogen", "code": "GAS3", "qty": 1}], "output": {"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 1}, {"name": "Radon", "code": "GAS2", "qty": 1}], "output": {"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 1}, {"name": "Radon", "code": "GAS2", "qty": 1}], "output": {"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 1}, {"name": "Sulphurine", "code": "GAS1", "qty": 1}], "output": {"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 1}, {"name": "Sulphurine", "code": "GAS1", "qty": 1}], "output": {"name": "Solanium", "code": "PLANT_HOT", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 1}, {"name": "Nitrogen", "code": "GAS3", "qty": 1}], "output": {"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Cobalt", "code": "CAVE1", "qty": 1}, {"name": "Nitrogen", "code": "GAS3", "qty": 1}], "output": {"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Salt", "code": "WATER1", "qty": 1}, {"name": "Nitrogen", "code": "GAS3", "qty": 1}], "output": {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Encourage Growth", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 1}, {"name": "Nitrogen", "code": "GAS3", "qty": 1}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Transmutation", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 15}, {"name": "Gold", "code": "ASTEROID2", "qty": 15}, {"name": "Platinum", "code": "ASTEROID3", "qty": 25}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Deep Metal Compression", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, {"name": "Silver", "code": "ASTEROID1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 5}, "time": "2m", "refinery_type": "grande"}, {"operation": "Deep Metal Compression", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, {"name": "Gold", "code": "ASTEROID2", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 8}, "time": "2m", "refinery_type": "grande"}, {"operation": "R 3input Land3 3", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}, {"name": "Platinum", "code": "ASTEROID3", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 12}, "time": "2m", "refinery_type": "grande"}, {"operation": "Artificial Photosynthesis", "inputs": [{"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 1}, {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 10}, "time": "15m", "refinery_type": "grande"}, {"operation": "Artificial Photosynthesis", "inputs": [{"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 1}, {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 10}, "time": "15m", "refinery_type": "grande"}, {"operation": "Artificial Photosynthesis", "inputs": [{"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 1}, {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 10}, "time": "15m", "refinery_type": "grande"}, {"operation": "Artificial Photosynthesis", "inputs": [{"name": "Solanium", "code": "PLANT_HOT", "qty": 1}, {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 10}, "time": "15m", "refinery_type": "grande"}, {"operation": "Artificial Photosynthesis", "inputs": [{"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 1}, {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 10}, "time": "15m", "refinery_type": "grande"}, {"operation": "Artificial Photosynthesis", "inputs": [{"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 1}, {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 1}], "output": {"name": "Oxygen", "code": "OXYGEN", "qty": 10}, "time": "15m", "refinery_type": "grande"}, {"operation": "Chromatic Stellar Fusion", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 1}, {"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Copper", "code": "YELLOW2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 5}, "time": "20m", "refinery_type": "grande"}, {"operation": "Chromatic Stellar Fusion", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 1}, {"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Cadmium", "code": "RED2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 10}, "time": "20m", "refinery_type": "grande"}, {"operation": "Chromatic Stellar Fusion", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 1}, {"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Emeril", "code": "GREEN2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 20}, "time": "20m", "refinery_type": "grande"}, {"operation": "Chromatic Stellar Fusion", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 1}, {"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Indium", "code": "BLUE2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 30}, "time": "20m", "refinery_type": "grande"}, {"operation": "Chromatic Alchemy", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}, {"name": "Emeril", "code": "GREEN2", "qty": 1}], "output": {"name": "Gold", "code": "ASTEROID2", "qty": 10}, "time": "20m", "refinery_type": "grande"}, {"operation": "Chromatic Alchemy", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 250}], "output": {"name": "Platinum", "code": "ASTEROID3", "qty": 10}, "time": "20m", "refinery_type": "grande"}, {"operation": "Antimatter Bypass", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 25}, {"name": "Sodium", "code": "CATALYST1", "qty": 10}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 250}], "output": {"name": "Warp Cell", "code": "HYPERFUEL1", "qty": 1}, "time": "10m", "refinery_type": "grande"}, {"operation": "Antimatter Bypass", "inputs": [{"name": "Carbon", "code": "FUEL1", "qty": 50}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 5}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 250}], "output": {"name": "Warp Cell", "code": "HYPERFUEL1", "qty": 1}, "time": "10m", "refinery_type": "grande"}, {"operation": "Antimatter Bypass", "inputs": [{"name": "Condensed Carbon", "code": "FUEL2", "qty": 25}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 5}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 250}], "output": {"name": "Warp Cell", "code": "HYPERFUEL1", "qty": 1}, "time": "10m", "refinery_type": "grande"}, {"operation": "Plasma Pressurisation", "inputs": [{"name": "Oxygen", "code": "OXYGEN", "qty": 10}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 20}, {"name": "Carbon", "code": "FUEL1", "qty": 20}], "output": {"name": "Unstable Plasma", "code": "GRENFUEL1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Plasma Pressurisation", "inputs": [{"name": "Oxygen", "code": "OXYGEN", "qty": 10}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 20}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}], "output": {"name": "Unstable Plasma", "code": "GRENFUEL1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Plasma Pressurisation", "inputs": [{"name": "Oxygen", "code": "OXYGEN", "qty": 10}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 20}, {"name": "Carbon", "code": "FUEL1", "qty": 20}], "output": {"name": "Unstable Plasma", "code": "GRENFUEL1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Plasma Pressurisation", "inputs": [{"name": "Oxygen", "code": "OXYGEN", "qty": 10}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 20}], "output": {"name": "Unstable Plasma", "code": "GRENFUEL1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Advanced Oxygen Capture", "inputs": [{"name": "Oxygen", "code": "OXYGEN", "qty": 10}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 10}], "output": {"name": "Life Support Gel", "code": "PRODFUEL2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Di-hydrogen Capture", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 10}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 20}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 5}], "output": {"name": "Starship Launch Fuel", "code": "LAUNCHFUEL", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Di-hydrogen Capture", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 10}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 20}, {"name": "Sodium", "code": "CATALYST1", "qty": 10}], "output": {"name": "Starship Launch Fuel", "code": "LAUNCHFUEL", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Di-hydrogen Capture", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 10}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 10}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 5}], "output": {"name": "Starship Launch Fuel", "code": "LAUNCHFUEL", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Ion Capture", "inputs": [{"name": "Ferrite Dust", "code": "LAND1", "qty": 10}, {"name": "Silver", "code": "ASTEROID1", "qty": 10}, {"name": "Sodium", "code": "CATALYST1", "qty": 10}], "output": {"name": "Ion Battery", "code": "POWERCELL", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Paraffinium", "code": "LUSH1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Aronium", "code": "ALLOY1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Dirty Bronze", "code": "ALLOY2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Ammonia", "code": "TOXIC1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Herox", "code": "ALLOY3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 120}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Uranium", "code": "RADIO1", "qty": 30}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 60}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Lemmium", "code": "ALLOY4", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Magno-gold", "code": "ALLOY5", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Tritium", "code": "ROCKETSUB", "qty": 20}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Silver", "code": "ASTEROID1", "qty": 20}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Gold", "code": "ASTEROID2", "qty": 10}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Cobalt", "code": "CAVE1", "qty": 60}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Alloy Latticing", "inputs": [{"name": "Dioxite", "code": "COLD1", "qty": 30}, {"name": "Ionised Cobalt", "code": "CAVE2", "qty": 30}, {"name": "Platinum", "code": "ASTEROID3", "qty": 5}], "output": {"name": "Grantine", "code": "ALLOY6", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 100}, {"name": "Carbon", "code": "FUEL1", "qty": 20}, {"name": "Salt", "code": "WATER1", "qty": 10}], "output": {"name": "Thermic Condensate", "code": "REACTION1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 100}, {"name": "Carbon", "code": "FUEL1", "qty": 20}, {"name": "Salt", "code": "WATER1", "qty": 10}], "output": {"name": "Enriched Carbon", "code": "REACTION2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 100}, {"name": "Carbon", "code": "FUEL1", "qty": 20}, {"name": "Salt", "code": "WATER1", "qty": 10}], "output": {"name": "Nitrogen Salt", "code": "REACTION3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 100}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Salt", "code": "WATER1", "qty": 10}], "output": {"name": "Thermic Condensate", "code": "REACTION1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 100}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Salt", "code": "WATER1", "qty": 10}], "output": {"name": "Enriched Carbon", "code": "REACTION2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 100}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Salt", "code": "WATER1", "qty": 10}], "output": {"name": "Nitrogen Salt", "code": "REACTION3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 100}, {"name": "Carbon", "code": "FUEL1", "qty": 20}, {"name": "Chlorine", "code": "WATER2", "qty": 5}], "output": {"name": "Thermic Condensate", "code": "REACTION1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 100}, {"name": "Carbon", "code": "FUEL1", "qty": 20}, {"name": "Chlorine", "code": "WATER2", "qty": 5}], "output": {"name": "Enriched Carbon", "code": "REACTION2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 100}, {"name": "Carbon", "code": "FUEL1", "qty": 20}, {"name": "Chlorine", "code": "WATER2", "qty": 5}], "output": {"name": "Nitrogen Salt", "code": "REACTION3", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 100}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Chlorine", "code": "WATER2", "qty": 5}], "output": {"name": "Thermic Condensate", "code": "REACTION1", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Radon", "code": "GAS2", "qty": 100}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Chlorine", "code": "WATER2", "qty": 5}], "output": {"name": "Enriched Carbon", "code": "REACTION2", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "High-Speed Sublimation", "inputs": [{"name": "Nitrogen", "code": "GAS3", "qty": 100}, {"name": "Condensed Carbon", "code": "FUEL2", "qty": 10}, {"name": "Chlorine", "code": "WATER2", "qty": 5}], "output": {"name": "Nitrogen Salt", "code": "REACTION3", "qty": 1}, "time": "20s", "refinery_type": "grande"}, {"operation": "Silicate Forging", "inputs": [{"name": "Silicate Powder", "code": "SAND1", "qty": 40}], "output": {"name": "Glass", "code": "FARMPROD3", "qty": 1}, "time": "10s", "refinery_type": "pequeña"}, {"operation": "Doom Cycling", "inputs": [{"name": "Tainted Metal", "code": "AF_METAL", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 2}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Doom Cycling", "inputs": [{"name": "Cursed Dust", "code": "WORMDUST", "qty": 2}], "output": {"name": "Residual Goop", "code": "SPACEGUNK1", "qty": 1}, "time": "10s", "refinery_type": "pequeña"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Vile Spawn", "code": "WORMPROD", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 50}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Flesh Rope", "code": "WORMCORE", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 50}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Subjugation of Glass", "inputs": [{"name": "Radiant Shard", "code": "DRONE_SHARD", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 50}, "time": "30m", "refinery_type": "pequeña"}, {"operation": "Purge Corruption", "inputs": [{"name": "Inverted Mirror", "code": "DRONE_SALVAGE", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 95}, "time": "36m 40s", "refinery_type": "pequeña"}, {"operation": "Sentience Extraction", "inputs": [{"name": "Hyaline Brain", "code": "SHIPBRAIN", "qty": 1}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 230}, "time": "53m 20s", "refinery_type": "pequeña"}, {"operation": "Restore Harmony", "inputs": [{"name": "Atlantideum", "code": "ROBOT2", "qty": 1}], "output": {"name": "Pugneum", "code": "ROBOT1", "qty": 2}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Reality Pollution", "inputs": [{"name": "Atlantideum", "code": "ROBOT2", "qty": 1}, {"name": "Pugneum", "code": "ROBOT1", "qty": 1}], "output": {"name": "Runaway Mould", "code": "SPACEGUNK2", "qty": 3}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Slime/Echo Infusion", "inputs": [{"name": "Atlantideum", "code": "ROBOT2", "qty": 5}, {"name": "Mordite", "code": "CREATURE1", "qty": 5}], "output": {"name": "Living Slime", "code": "SPACEGUNK4", "qty": 1}, "time": "60m", "refinery_type": "mediana"}, {"operation": "Volcanic Transmutation", "inputs": [{"name": "Pyrite", "code": "DUSTY1", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Basalt", "code": "LAVA1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Volcanic Transmutation", "inputs": [{"name": "Phosphorus", "code": "HOT1", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Basalt", "code": "LAVA1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Di-hydrogen Cycling", "inputs": [{"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}, {"name": "Silicate Powder", "code": "SAND1", "qty": 1}], "output": {"name": "Deuterium", "code": "LAUNCHSUB2", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "30s", "refinery_type": "pequeña"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 8}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 8}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Extract Chromatic Material", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 2}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "25s", "refinery_type": "pequeña"}, {"operation": "Chromatic Expansion", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Quartzite", "code": "PURPLE2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Metal Fusion", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 4}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Chromatic Stellar Fusion", "inputs": [{"name": "Silver", "code": "ASTEROID1", "qty": 1}, {"name": "Gold", "code": "ASTEROID2", "qty": 1}, {"name": "Quartzite", "code": "PURPLE2", "qty": 1}], "output": {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 30}, "time": "20m", "refinery_type": "grande"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}], "output": {"name": "Lithium", "code": "WATERWORLD1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}], "output": {"name": "Lithium", "code": "WATERWORLD1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Uranium", "code": "RADIO1", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}, {"name": "Methane", "code": "GAS4", "qty": 1}], "output": {"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}, {"name": "Methane", "code": "GAS4", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Ferrite Dust Extraction", "inputs": [{"name": "Lithium", "code": "WATERWORLD1", "qty": 1}], "output": {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Lithium", "code": "WATERWORLD1", "qty": 1}], "output": {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Environmental Element Transfer", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Lithium", "code": "WATERWORLD1", "qty": 1}], "output": {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Lithium", "code": "WATERWORLD1", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Lithium", "code": "WATERWORLD1", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Lithium", "code": "WATERWORLD1", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Pyrite", "code": "DUSTY1", "qty": 3}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Quartzite", "code": "PURPLE2", "qty": 1}, {"name": "Lithium", "code": "WATERWORLD1", "qty": 1}, {"name": "Methane", "code": "GAS4", "qty": 1}], "output": {"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Loosen Bonds", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Lithium", "code": "WATERWORLD1", "qty": 1}, {"name": "Methane", "code": "GAS4", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "grande"}, {"operation": "Gas Transfer", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 3}], "output": {"name": "Nitrogen", "code": "GAS3", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}, {"operation": "Organic Fusion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Di-hydrogen", "code": "LAUNCHSUB", "qty": 1}], "output": {"name": "Phosphorus", "code": "HOT1", "qty": 1}, "time": "40s", "refinery_type": "mediana"}, {"operation": "Gas Transfer", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Oxygen", "code": "OXYGEN", "qty": 1}], "output": {"name": "Nitrogen", "code": "GAS3", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Chromatic Metal", "code": "STELLAR2", "qty": 1}], "output": {"name": "Nitrogen", "code": "GAS3", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Sodium", "code": "CATALYST1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Ferrite Dust", "code": "LAND1", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 1}, "time": "2m", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Pure Ferrite", "code": "LAND2", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 2}, "time": "2m", "refinery_type": "mediana"}, {"operation": "Gas Catalysation", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Magnetised Ferrite", "code": "LAND3", "qty": 1}], "output": {"name": "Sodium Nitrate", "code": "CATALYST2", "qty": 3}, "time": "2m", "refinery_type": "mediana"}, {"operation": "Organic Fusion", "inputs": [{"name": "Sulphurine", "code": "GAS1", "qty": 3}, {"name": "Radon", "code": "GAS2", "qty": 3}, {"name": "Nitrogen", "code": "GAS3", "qty": 3}], "output": {"name": "Methane", "code": "GAS4", "qty": 1}, "time": "40s", "refinery_type": "grande"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Ammonia", "code": "TOXIC1", "qty": 1}], "output": {"name": "Fungal Mould", "code": "PLANT_TOXIC", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Dioxite", "code": "COLD1", "qty": 1}], "output": {"name": "Frost Crystal", "code": "PLANT_SNOW", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Uranium", "code": "RADIO1", "qty": 1}], "output": {"name": "Gamma Root", "code": "PLANT_RADIO", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Pyrite", "code": "DUSTY1", "qty": 1}], "output": {"name": "Cactus Flesh", "code": "PLANT_DUST", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Phosphorus", "code": "HOT1", "qty": 1}], "output": {"name": "Solanium", "code": "PLANT_HOT", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Paraffinium", "code": "LUSH1", "qty": 1}], "output": {"name": "Star Bulb", "code": "PLANT_LUSH", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Crystallised Helium", "code": "GASGIANT1", "qty": 1}], "output": {"name": "Marrow Bulb", "code": "PLANT_CAVE", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Lithium", "code": "WATERWORLD1", "qty": 1}], "output": {"name": "Kelp Sac", "code": "PLANT_WATER", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Organic Expansion", "inputs": [{"name": "Methane", "code": "GAS4", "qty": 1}, {"name": "Mordite", "code": "CREATURE1", "qty": 1}], "output": {"name": "Faecium", "code": "PLANT_POOP", "qty": 1}, "time": "1m 30s", "refinery_type": "mediana"}, {"operation": "Recycle Stone", "inputs": [{"name": "Polished Stone", "code": "RUINSUB", "qty": 1}], "output": {"name": "Pure Ferrite", "code": "LAND2", "qty": 2}, "time": "1m", "refinery_type": "pequeña"}, {"operation": "Chromatic Alchemy", "inputs": [{"name": "Activated Quartzite", "code": "EX_PURPLE", "qty": 1}, {"name": "Carbon", "code": "FUEL1", "qty": 1}], "output": {"name": "Quartzite", "code": "PURPLE2", "qty": 1}, "time": "1m", "refinery_type": "mediana"}, {"operation": "Devitrification", "inputs": [{"name": "Corrupted Ichor", "code": "SWARMDUST", "qty": 5}], "output": {"name": "Nanite Cluster", "code": "TECHFRAG", "qty": 1}, "time": "1m 30s", "refinery_type": "pequeña"}];
+const TRANSLATIONS = {"Carbon": "Carbono", "Condensed Carbon": "Carbono condensado", "Cobalt": "Cobalto", "Ionised Cobalt": "Cobalto ionizado", "Ferrite Dust": "Polvo de ferrita", "Pure Ferrite": "Ferrita pura", "Magnetised Ferrite": "Ferrita magnetizada", "Gold": "Oro", "Silver": "Plata", "Platinum": "Platino", "Chromatic Metal": "Metal cromático", "Oxygen": "Oxígeno", "Di-hydrogen": "Dihidrógeno", "Di-hydrogen Jelly": "Gelatina de dihidrógeno", "Tritium": "Tritio", "Deuterium": "Deuterio", "Sodium": "Sodio", "Sodium Nitrate": "Nitrato de sodio", "Chlorine": "Cloro", "Salt": "Sal", "Sulphurine": "Sulfurina", "Radon": "Radón", "Nitrogen": "Nitrógeno", "Uranium": "Uranio", "Pyrite": "Pirita", "Ammonia": "Amoníaco", "Dioxite": "Dioxita", "Phosphorus": "Fósforo", "Paraffinium": "Parafinita", "Faecium": "Fecio", "Mordite": "Mordita", "Frost Crystal": "Cristal de escarcha", "Cactus Flesh": "Carne de cactus", "Fungal Mould": "Moho fúngico", "Kelp Sac": "Saco de algas", "Marrow Bulb": "Bulbo de médula", "Star Bulb": "Bulbo estelar", "Solanium": "Solanio", "Gamma Root": "Raíz gamma", "Cyto-phosphate": "Citofosfato", "Living Slime": "Limo vivo", "Viscous Fluids": "Fluidos viscosos", "Residual Goop": "Sustancia residual", "Pugneum": "Pugneo", "Nanite Cluster": "Racimo de nanitos", "Salvaged Data": "Datos recuperados", "Glass": "Vidrio", "Living Pearl": "Perla viva", "Hypnotic Eye": "Ojo hipnótico", "Hadal Core": "Núcleo hadal", "Crystal Sulphide": "Sulfuro cristalino", "Antimatter": "Antimateria", "Antimatter Housing": "Carcasa de antimateria", "Warp Cell": "Célula de salto", "Unstable Plasma": "Plasma inestable", "Ion Battery": "Batería iónica", "Aronium": "Aronio", "Herox": "Herox", "Lemmium": "Lemio", "Magno-Gold": "Magno-oro", "Grantine": "Grantina", "Dirty Bronze": "Bronce sucio", "Catalytic Array": "Matriz catalítica", "Hermetic Seal": "Sello hermético", "Starship Launch Fuel": "Combustible de despegue", "Plasma Funnel": "Embudo de plasma", "Runaway Mould": "Moho desbocado", "Crumbling Soil": "Tierra desmoronada", "Activated Carbon": "Carbono activado", "Activated Copper": "Cobre activado", "Activated Cadmium": "Cadmio activado", "Activated Emeril": "Emerilo activado", "Activated Indium": "Indio activado", "Copper": "Cobre", "Cadmium": "Cadmio", "Emeril": "Emerilo", "Indium": "Indio", "Pyroite": "Piroita", "Aquasphere": "Acuasfera", "Coral Phosphate": "Fosfato de coral", "Organic Catalyst": "Catalizador orgánico", "Enriched Carbon": "Carbono enriquecido", "Nitrogen Salt": "Sal nitrogenada", "Hot Ice": "Hielo ardiente", "Rusted Metal": "Metal oxidado", "Ancient Bone": "Hueso antiguo", "Whispering Egg": "Huevo susurrante", "Larval Core": "Núcleo larvario"};
+
+function t(name) {
+  return TRANSLATIONS[name] || name;
+}
+
+function normalize(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+function iconSrc(code) {
+  return code ? 'icons/' + code + '.png' : '';
+}
+
+function hideImg(img) { img.style.display = 'none'; }
+function iconEl(code, name) {
+  if (!code) return '<div class="mat-icon-placeholder"></div>';
+  const safe = (name||'').replace(/"/g,'&quot;');
+  return '<img class="mat-icon" src="icons/' + code + '.png" alt="' + safe + '" loading="lazy" onerror="hideImg(this)">';
+}
+
+// ── Estado de filtros y paginación ──
+let filterType   = 'all';
+let filterInput  = null;
+let filterOutput = null;
+let filterText   = '';
+const PAGE_SIZE  = 50;
+let currentPage  = 0;
+let filteredList = [];
+
+// ── Estado de ordenación ──
+let sortBy  = 'none'; // 'none' | 'time' | 'qty'
+let sortDir = 1;      // 1=asc -1=desc
+
+function parseTime(str) {
+  let s = 0;
+  const m   = str.match(/(\d+)m/);
+  const sec = str.match(/(\d+)s/);
+  if (m)   s += parseInt(m[1])   * 60;
+  if (sec) s += parseInt(sec[1]);
+  return s;
+}
+
+function updateSortBtns() {
+  const timeBtn   = document.getElementById('sortTimeBtn');
+  const qtyBtn    = document.getElementById('sortQtyBtn');
+  const timeArrow = document.getElementById('sortTimeArrow');
+  const qtyArrow  = document.getElementById('sortQtyArrow');
+  timeBtn.classList.toggle('active', sortBy === 'time');
+  qtyBtn.classList.toggle('active',  sortBy === 'qty');
+  timeArrow.textContent = sortBy === 'time' ? (sortDir === 1 ? '↑' : '↓') : '';
+  qtyArrow.textContent  = sortBy === 'qty'  ? (sortDir === 1 ? '↑' : '↓') : '';
+}
+
+function toggleSort(which) {
+  if (sortBy !== which) { sortBy = which; sortDir = 1; }
+  else if (sortDir === 1) { sortDir = -1; }
+  else { sortBy = 'none'; sortDir = 1; }
+  updateSortBtns();
+  render();
+}
+
+// ── Materiales únicos ──
+const allInputMats  = new Map();
+const allOutputMats = new Map();
+
+RECIPES.forEach(r => {
+  r.inputs.forEach(m => {
+    if (m.name && !allInputMats.has(m.name)) allInputMats.set(m.name, m.code);
+  });
+  if (r.output && r.output.name) allOutputMats.set(r.output.name, r.output.code);
+});
+
+// ── Render de una tarjeta ──
+function cardHTML(r) {
+  const badges = {
+    'pequeña': '<span class="type-badge badge-small">Pequeña</span>',
+    'mediana':   '<span class="type-badge badge-medium">Mediana</span>',
+    'grande':    '<span class="type-badge badge-large">Grande</span>',
+  };
+  const badge = badges[r.refinery_type] || '';
+
+  const inputsHTML = r.inputs.map(m =>
+    '<div class="material">' +
+      iconEl(m.code, t(m.name)) +
+      '<div class="mat-info">' +
+        '<span class="mat-name">' + t(m.name) + '</span>' +
+        '<span class="mat-qty">× ' + m.qty + '</span>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+
+  const out = r.output;
+  const outputHTML = out
+    ? '<div class="material">' +
+        iconEl(out.code, t(out.name)) +
+        '<div class="mat-info">' +
+          '<span class="mat-name">' + t(out.name) + '</span>' +
+          '<span class="mat-qty">× ' + out.qty + '</span>' +
+        '</div>' +
+      '</div>'
+    : '';
+
+  return '<div class="card">' +
+    '<div class="card-header">' +
+      '<span class="op-name">' + r.operation + '</span>' +
+      badge +
+    '</div>' +
+    '<div class="card-body">' +
+      '<div class="inputs">' + inputsHTML + '</div>' +
+      '<div class="arrow-area">→</div>' +
+      '<div class="output-section">' + outputHTML + '</div>' +
+    '</div>' +
+    '<div class="card-footer">' +
+      '<button class="chain-btn" data-output="' + (r.output ? r.output.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;') : '') + '" data-qty="' + (r.output ? r.output.qty : 1) + '" data-ridx="' + RECIPES.indexOf(r) + '">&#x26D3; Cadena</button>' +
+      '<span class="time-label">Tiempo:</span>' +
+      '<span class="time-value">' + r.time + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+// ── Filtrar y renderizar con paginación ──
+function applyFilters() {
+  const text = normalize(filterText);
+  filteredList = RECIPES.filter(r => {
+    if (filterType !== 'all' && r.refinery_type !== filterType) return false;
+    if (filterInput  && !r.inputs.some(m => m.name === filterInput)) return false;
+    if (filterOutput && (!r.output || r.output.name !== filterOutput)) return false;
+    if (text) {
+      const hay = [
+        r.operation,
+        r.output ? t(r.output.name) : '',
+        r.output ? r.output.name : '',
+        ...r.inputs.map(m => t(m.name)),
+        ...r.inputs.map(m => m.name),
+      ].join(' ');
+      if (!normalize(hay).includes(text)) return false;
+    }
+    return true;
+  });
+  // Ordenación
+  if (sortBy === 'time') {
+    filteredList.sort((a, b) => (parseTime(a.time) - parseTime(b.time)) * sortDir);
+  } else if (sortBy === 'qty') {
+    filteredList.sort((a, b) => ((a.output ? a.output.qty : 0) - (b.output ? b.output.qty : 0)) * sortDir);
+  }
+  currentPage = 0;
+}
+
+function renderPage() {
+  const grid  = document.getElementById('grid');
+  const badge = document.getElementById('countBadge');
+  const total = filteredList.length;
+
+  if (total === 0) {
+    grid.innerHTML = '<div class="empty"><h2>Sin resultados</h2><p>Prueba con otros filtros.</p></div>';
+    badge.textContent = '0 / ' + RECIPES.length + ' recetas';
+    return;
+  }
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = currentPage * PAGE_SIZE;
+  const page  = filteredList.slice(start, start + PAGE_SIZE);
+
+  const paginationHTML = totalPages > 1
+    ? '<div class="pagination">' +
+        '<button class="page-btn" id="prevBtn" ' + (currentPage === 0 ? 'disabled' : '') + '>&#x2190; Anterior</button>' +
+        '<span class="page-info">Pág. ' + (currentPage+1) + ' / ' + totalPages + '</span>' +
+        '<button class="page-btn" id="nextBtn" ' + (currentPage >= totalPages-1 ? 'disabled' : '') + '>Siguiente &#x2192;</button>' +
+      '</div>'
+    : '';
+
+  grid.innerHTML = page.map(cardHTML).join('') + paginationHTML;
+
+  if (totalPages > 1) {
+    document.getElementById('prevBtn').addEventListener('click', () => { currentPage--; renderPage(); window.scrollTo(0,0); });
+    document.getElementById('nextBtn').addEventListener('click', () => { currentPage++; renderPage(); window.scrollTo(0,0); });
+  }
+
+  badge.textContent = total === RECIPES.length
+    ? RECIPES.length + ' recetas'
+    : total + ' / ' + RECIPES.length + ' recetas';
+}
+
+function render() {
+  applyFilters();
+  renderPage();
+}
+
+// ── Cadena de producción ──
+const matCodeIndex = new Map();
+RECIPES.forEach(r => {
+  if (r.output && r.output.code) matCodeIndex.set(r.output.name, r.output.code);
+  r.inputs.forEach(m => { if (m.code && !matCodeIndex.has(m.name)) matCodeIndex.set(m.name, m.code); });
+});
+
+function findRecipeFor(name) {
+  return RECIPES.find(r => r.output && r.output.name === name) || null;
+}
+
+// ── Estado de la cadena activa ──
+let chainTree    = null;
+let chainExpanded = new Set();
+let chainRawH    = '';
+
+function buildChainTree(name, qty, visited, forceRecipe, _id) {
+  if (_id === undefined) _id = 'root';
+  if (!visited) visited = new Set();
+  if (visited.has(name)) return { name, qty, cycle: true,  recipe: null, children: [], _id };
+  const recipe = forceRecipe || findRecipeFor(name);
+  if (!recipe)            return { name, qty, raw:   true,  recipe: null, children: [], _id };
+  const v2 = new Set(visited);
+  v2.add(name);
+  const scale = qty / recipe.output.qty;
+  const children = recipe.inputs.map((inp, i) =>
+    buildChainTree(inp.name, Math.ceil(inp.qty * scale), v2, null, _id + '.' + i)
+  );
+  return { name, qty, recipe, children, raw: false, cycle: false, _id };
+}
+
+function collectRawMats(node, acc) {
+  if (!acc) acc = new Map();
+  if (node.raw || node.cycle) {
+    acc.set(node.name, (acc.get(node.name) || 0) + node.qty);
+  } else {
+    node.children.forEach(c => collectRawMats(c, acc));
+  }
+  return acc;
+}
+
+function renderChainTree(tree, expanded) {
+  // Layout: raw materials LEFT, final product RIGHT
+  const NW = 160, NH = 80, HG = 48, VG = 12, PAD = 14;
+  const CSTEP = NW + HG;
+  const LSTEP = NH + VG;
+
+  // Only show children of a node if it's in the expanded set
+  function visC(n) {
+    if (n.raw || n.cycle || !expanded.has(n._id)) return [];
+    return n.children || [];
+  }
+
+  // 1. Assign depth (root = 0, children = 1, ...)
+  function setDepth(n, d) {
+    n._d = d;
+    visC(n).forEach(c => setDepth(c, d + 1));
+  }
+
+  // 2. Find deepest visible level
+  function getMaxD(n) {
+    const ch = visC(n);
+    if (!ch.length) return n._d;
+    return Math.max.apply(null, ch.map(getMaxD));
+  }
+
+  // 3. Assign Y: visible leaves get sequential slots, parents center between children
+  let nextLeafY = PAD;
+  function setY(n) {
+    const ch = visC(n);
+    if (!ch.length) {
+      n._y = nextLeafY;
+      nextLeafY += LSTEP;
+      return;
+    }
+    ch.forEach(setY);
+    n._y = (ch[0]._y + ch[ch.length - 1]._y) / 2;
+  }
+
+  // 4. Assign X: root is rightmost, leaves are leftmost
+  function setX(n, md) {
+    n._x = PAD + (md - n._d) * CSTEP;
+    visC(n).forEach(c => setX(c, md));
+  }
+
+  // 5. Collect visible nodes + edges
+  const allNodes = [], allEdges = [];
+  function walk(n, par) {
+    allNodes.push(n);
+    if (par) allEdges.push([par, n]);
+    visC(n).forEach(c => walk(c, n));
+  }
+
+  setDepth(tree, 0);
+  const md = getMaxD(tree);
+  setY(tree);
+  setX(tree, md);
+  walk(tree, null);
+
+  // Canvas dimensions
+  const W = PAD + (md + 1) * CSTEP - HG + PAD;
+  const H = nextLeafY - VG + PAD;
+
+  // 6. Bezier curves: right-edge of ingredient → left-edge of product
+  const arrowDefs = '<defs><marker id="arr" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><polygon points="0 0,7 3,0 6" fill="#2A4A6A"/></marker></defs>';
+
+  const paths = allEdges.map(([par, ch]) => {
+    const x1 = ch._x + NW,  y1 = ch._y + NH / 2;
+    const x2 = par._x,      y2 = par._y + NH / 2;
+    const mx = (x1 + x2) / 2;
+    return '<path d="M' + x1 + ',' + y1 +
+      ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 +
+      '" stroke="#2A4A6A" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>';
+  }).join('');
+
+  // 7. Node cards
+  const cards = allNodes.map(n => {
+    const code = (n.recipe && n.recipe.output ? n.recipe.output.code : null) || matCodeIndex.get(n.name);
+    const ico = code
+      ? '<img class="tree-icon" src="icons/' + code + '.png" onerror="hideImg(this)">'
+      : '<div style="width:28px;height:28px;flex-shrink:0;background:var(--bg-card2);border-radius:4px"></div>';
+
+    const isExpandable = !n.raw && !n.cycle;
+    const isExpanded   = isExpandable && expanded.has(n._id);
+    const isCollapsed  = isExpandable && !isExpanded;
+
+    let cls = 'tree-node-card';
+    if      (n._d === 0)  cls += ' tree-node-root';
+    else if (n.raw)       cls += ' tree-node-raw';
+    else if (n.cycle)     cls += ' tree-node-cycle';
+    else if (isCollapsed) cls += ' tree-node-collapsed';
+
+    let badge;
+    if (n.cycle) {
+      badge = '<span class="chain-cycle-lbl">&#x21BA; ciclo</span>';
+    } else if (n.raw) {
+      badge = '<span class="chain-badge chain-base">Base</span>';
+    } else {
+      const rt = n.recipe.refinery_type;
+      const rc = rt === 'pequeña' ? 'badge-small' : rt === 'mediana' ? 'badge-medium' : 'badge-large';
+      badge = '<span class="type-badge chain-badge ' + rc + '">' + rt + '</span>';
+    }
+
+    // Operation shown only when expanded; toggle hint shown only when collapsed
+    const opH = (isExpanded && n.recipe)
+      ? '<span class="tree-op" title="' + n.recipe.operation + '">' + n.recipe.operation + '</span>'
+      : '';
+    const toggleH = isCollapsed
+      ? '<span class="node-toggle">&#x25B8; ver</span>'
+      : '';
+
+    // data-node-id only on non-root expandable nodes (root stays always expanded)
+    const nodeId = (isExpandable && n._d !== 0) ? ' data-node-id="' + n._id + '"' : '';
+
+    return '<div class="' + cls + '"' + nodeId + ' style="left:' + n._x + 'px;top:' + n._y + 'px">' +
+      '<div class="tree-top">' + ico +
+        '<div style="min-width:0">' +
+          '<div class="tree-name">' + t(n.name) + '</div>' +
+          '<div class="tree-qty">&times; ' + n.qty + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="tree-foot">' + badge + opH + toggleH + '</div>' +
+    '</div>';
+  }).join('');
+
+  return '<div class="tree-canvas-wrap">' +
+    '<div class="tree-canvas" style="width:' + W + 'px;height:' + H + 'px;min-width:100%">' +
+      '<svg class="tree-svg" width="' + W + '" height="' + H + '">' + arrowDefs + paths + '</svg>' +
+      cards +
+    '</div>' +
+  '</div>';
+}
+
+function reRenderChain() {
+  document.getElementById('chainBody').innerHTML =
+    renderChainTree(chainTree, chainExpanded) + chainRawH;
+}
+
+function openChain(outputName, qty, ridx) {
+  const rootRecipe = (ridx >= 0 && ridx < RECIPES.length) ? RECIPES[ridx] : null;
+  chainTree     = buildChainTree(outputName, qty, null, rootRecipe);
+  chainExpanded = new Set(['root']);
+
+  const rawMap   = collectRawMats(chainTree);
+  const rawItemsH = [...rawMap.entries()].map(([n, q]) => {
+    const code = matCodeIndex.get(n);
+    const ico  = code
+      ? '<img style="width:22px;height:22px;object-fit:contain;image-rendering:pixelated" src="icons/' + code + '.png" onerror="hideImg(this)">'
+      : '';
+    return '<div class="raw-item">' + ico +
+      '<span class="chain-mat-name">' + t(n) + '</span>' +
+      '<span class="chain-mat-qty">&times; ' + q + '</span>' +
+    '</div>';
+  }).join('');
+  chainRawH = rawMap.size
+    ? '<div class="raw-summary"><div class="raw-summary-title">Materiales base totales</div>' +
+      '<div class="raw-list">' + rawItemsH + '</div></div>'
+    : '';
+
+  document.getElementById('chainTitle').textContent = 'Cadena: ' + t(outputName);
+  reRenderChain();
+  document.getElementById('chainModal').classList.add('open');
+}
+
+// ── Dropdown de materiales ──
+function buildDropdown(selId, inputId, clearId, dropId, matsMap, onSelect) {
+  const input    = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropId);
+  const clearBtn = document.getElementById(clearId);
+  let selected   = null;
+  let hiIdx      = -1;
+
+  function opts() { return [...dropdown.querySelectorAll('.mat-option')]; }
+
+  function highlight(idx) {
+    const items = opts();
+    items.forEach(o => o.classList.remove('highlighted'));
+    hiIdx = Math.max(-1, Math.min(idx, items.length - 1));
+    if (hiIdx >= 0) {
+      items[hiIdx].classList.add('highlighted');
+      items[hiIdx].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function choose(name) {
+    selected = name;
+    input.value = t(name);
+    clearBtn.style.display = 'block';
+    dropdown.classList.remove('open');
+    hiIdx = -1;
+    onSelect(name);
+    render();
+  }
+
+  function populate(query) {
+    const q = normalize(query);
+    const items = [...matsMap.entries()]
+      .filter(([n]) => normalize(t(n)).includes(q) || normalize(n).includes(q))
+      .sort(([a],[b]) => t(a).localeCompare(t(b), 'es'));
+    hiIdx = -1;
+    dropdown.innerHTML = items.map(([name, code]) =>
+      '<div class="mat-option' + (name===selected?' selected':'') + '" data-name="' + name + '">' +
+        (code ? '<img src="icons/' + code + '.png" alt="" loading="lazy">' : '') +
+        t(name) +
+      '</div>'
+    ).join('');
+    dropdown.querySelectorAll('.mat-option').forEach(el => {
+      el.addEventListener('mousedown', e => { e.preventDefault(); choose(el.dataset.name); });
+    });
+  }
+
+  input.addEventListener('keydown', e => {
+    const isOpen = dropdown.classList.contains('open');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) {
+        populate(selected ? '' : input.value);
+        dropdown.classList.add('open');
+        if (e.key === 'ArrowDown') highlight(0);
+      } else {
+        highlight(e.key === 'ArrowDown' ? hiIdx + 1 : hiIdx - 1);
+      }
+    } else if (e.key === 'Enter' && isOpen) {
+      const items = opts();
+      if (hiIdx >= 0 && items[hiIdx]) { e.preventDefault(); choose(items[hiIdx].dataset.name); }
+    } else if (e.key === 'Escape' && isOpen) {
+      dropdown.classList.remove('open');
+      hiIdx = -1;
+    }
+  });
+
+  input.addEventListener('focus', () => {
+    populate(selected ? '' : input.value);
+    dropdown.classList.add('open');
+  });
+  input.addEventListener('input', () => {
+    if (selected) { selected = null; clearBtn.style.display = 'none'; onSelect(null); render(); }
+    populate(input.value);
+    dropdown.classList.add('open');
+  });
+  input.addEventListener('blur', () => setTimeout(() => dropdown.classList.remove('open'), 150));
+  clearBtn.addEventListener('click', () => {
+    selected = null;
+    input.value = '';
+    clearBtn.style.display = 'none';
+    onSelect(null);
+    dropdown.classList.remove('open');
+    render();
+  });
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  buildDropdown('inputSel',  'inputSearch',  'inputClear',  'inputDropdown',  allInputMats,  v => { filterInput  = v; });
+  buildDropdown('outputSel', 'outputSearch', 'outputClear', 'outputDropdown', allOutputMats, v => { filterOutput = v; });
+
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterType = btn.dataset.type;
+      render();
+    });
+  });
+
+  document.getElementById('textSearch').addEventListener('input', e => {
+    filterText = e.target.value;
+    render();
+  });
+
+  document.getElementById('sortTimeBtn').addEventListener('click', () => toggleSort('time'));
+  document.getElementById('sortQtyBtn').addEventListener('click',  () => toggleSort('qty'));
+
+  // Delegación para botones de cadena (grid se repinta en cada página)
+  document.getElementById('grid').addEventListener('click', e => {
+    const btn = e.target.closest('.chain-btn');
+    if (btn) openChain(btn.dataset.output, parseInt(btn.dataset.qty) || 1, parseInt(btn.dataset.ridx));
+  });
+
+  // Expandir / colapsar nodos de la cadena
+  document.getElementById('chainBody').addEventListener('click', e => {
+    const card = e.target.closest('[data-node-id]');
+    if (!card) return;
+    const id = card.dataset.nodeId;
+    if (chainExpanded.has(id)) chainExpanded.delete(id);
+    else chainExpanded.add(id);
+    reRenderChain();
+  });
+
+  // Cerrar modal
+  document.getElementById('chainClose').addEventListener('click', () => {
+    document.getElementById('chainModal').classList.remove('open');
+  });
+  document.getElementById('chainModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('chainModal'))
+      document.getElementById('chainModal').classList.remove('open');
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('chainModal').classList.remove('open');
+  });
+
+  render();
+});
+</script>
+</body>
+</html>
