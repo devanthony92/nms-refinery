@@ -594,8 +594,8 @@ let currentPage  = 0;
 let filteredList = [];
 
 // ── Estado de ordenación ──
-let sortBy  = 'alpha'; // 'alpha' | 'time' | 'qty'
-let sortDir = 1;       // 1=asc -1=desc
+let sortBy  = 'none'; // 'none' | 'time' | 'qty'  (alfa siempre primario)
+let sortDir = 1;      // 1=asc -1=desc
 
 function parseTime(str) {
   let s = 0;
@@ -620,7 +620,7 @@ function updateSortBtns() {
 function toggleSort(which) {
   if (sortBy !== which) { sortBy = which; sortDir = 1; }
   else if (sortDir === 1) { sortDir = -1; }
-  else { sortBy = 'alpha'; sortDir = 1; }
+  else { sortBy = 'none'; sortDir = 1; }
   updateSortBtns();
   render();
 }
@@ -703,18 +703,17 @@ function applyFilters() {
     }
     return true;
   });
-  // Ordenación
-  if (sortBy === 'time') {
-    filteredList.sort((a, b) => (parseTime(a.time) - parseTime(b.time)) * sortDir);
-  } else if (sortBy === 'qty') {
-    filteredList.sort((a, b) => ((a.output ? a.output.qty : 0) - (b.output ? b.output.qty : 0)) * sortDir);
-  } else {
-    filteredList.sort((a, b) => {
-      const na = a.output ? t(a.output.name) : '';
-      const nb = b.output ? t(b.output.name) : '';
-      return na.localeCompare(nb, 'es');
-    });
-  }
+  // Orden primario: siempre alfabético por nombre de salida (es)
+  // Orden secundario (desempate): tiempo o cantidad si está activado
+  filteredList.sort((a, b) => {
+    const na = a.output ? t(a.output.name) : '';
+    const nb = b.output ? t(b.output.name) : '';
+    const alpha = na.localeCompare(nb, 'es');
+    if (alpha !== 0) return alpha;
+    if (sortBy === 'time') return (parseTime(a.time) - parseTime(b.time)) * sortDir;
+    if (sortBy === 'qty')  return ((a.output ? a.output.qty : 0) - (b.output ? b.output.qty : 0)) * sortDir;
+    return 0;
+  });
   currentPage = 0;
 }
 
