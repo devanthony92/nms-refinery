@@ -212,9 +212,13 @@ def build():
     display: flex;
     flex-direction: column;
     gap: 8px;
-    transition: border-color 0.15s;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
   }}
-  .card:hover {{ border-color: var(--gold-dim); }}
+  .card:hover  {{ border-color: var(--gold-dim); box-shadow: 0 6px 20px rgba(0,0,0,0.5); transform: translateY(-2px); }}
+  .card:active {{ transform: translateY(0);       box-shadow: 0 2px 8px rgba(0,0,0,0.3); }}
 
   .card-header {{
     display: flex;
@@ -362,20 +366,6 @@ def build():
   .sort-btn:hover {{ border-color: var(--gold-dim); color: var(--text); }}
   .sort-btn.active {{ border-color: var(--gold); color: var(--gold); background: #1A1500; }}
   .sort-arrow {{ font-size: 0.7rem; opacity: 0.7; }}
-
-  /* Botón de cadena en tarjeta */
-  .chain-btn {{
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 3px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.72rem;
-    transition: all 0.15s;
-    margin-right: auto;
-  }}
-  .chain-btn:hover {{ border-color: var(--gold-dim); color: var(--gold); }}
 
   /* Modal overlay */
   .modal-overlay {{
@@ -654,7 +644,8 @@ function cardHTML(r) {{
       '</div>'
     : '';
 
-  return '<div class="card">' +
+  const safeOutput = r.output ? r.output.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;') : '';
+  return '<div class="card" data-output="' + safeOutput + '" data-qty="' + (r.output ? r.output.qty : 1) + '" data-ridx="' + RECIPES.indexOf(r) + '">' +
     '<div class="card-header">' +
       '<span class="op-name">' + r.operation + '</span>' +
       badge +
@@ -665,7 +656,6 @@ function cardHTML(r) {{
       '<div class="output-section">' + outputHTML + '</div>' +
     '</div>' +
     '<div class="card-footer">' +
-      '<button class="chain-btn" data-output="' + (r.output ? r.output.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;') : '') + '" data-qty="' + (r.output ? r.output.qty : 1) + '" data-ridx="' + RECIPES.indexOf(r) + '">&#x26D3; Cadena</button>' +
       '<span class="time-label">Tiempo:</span>' +
       '<span class="time-value">' + r.time + '</span>' +
     '</div>' +
@@ -1053,10 +1043,10 @@ document.addEventListener('DOMContentLoaded', () => {{
   document.getElementById('sortTimeBtn').addEventListener('click', () => toggleSort('time'));
   document.getElementById('sortQtyBtn').addEventListener('click',  () => toggleSort('qty'));
 
-  // Delegación para botones de cadena (grid se repinta en cada página)
+  // Click en card abre la cadena de producción
   document.getElementById('grid').addEventListener('click', e => {{
-    const btn = e.target.closest('.chain-btn');
-    if (btn) openChain(btn.dataset.output, parseInt(btn.dataset.qty) || 1, parseInt(btn.dataset.ridx));
+    const card = e.target.closest('.card');
+    if (card) openChain(card.dataset.output, parseInt(card.dataset.qty) || 1, parseInt(card.dataset.ridx));
   }});
 
   // Expandir / colapsar nodos de la cadena
