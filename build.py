@@ -347,6 +347,20 @@ def build():
     text-align: center;
   }}
 
+  /* Selector de resultados por página */
+  .page-size-select {{
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+  }}
+  .page-size-select:focus {{ border-color: var(--gold-dim); }}
+
   /* Botones de ordenación */
   .sort-buttons {{ display: flex; gap: 4px; }}
   .sort-btn {{
@@ -432,6 +446,14 @@ def build():
   .tree-node-collapsed:hover {{ border-color: var(--gold) !important; border-style: solid; }}
   [data-node-id] {{ cursor: pointer; }}
   .node-toggle {{ font-size: 0.58rem; color: var(--gold-dim); margin-left: auto; flex-shrink: 0; }}
+  .node-next-btn {{
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 0.55rem;
+    padding: 1px 5px; border-radius: 4px; cursor: pointer;
+    flex-shrink: 0; white-space: nowrap; transition: all 0.12s;
+    margin-left: auto;
+  }}
+  .node-next-btn:hover {{ border-color: var(--gold-dim); color: var(--gold); }}
   .tree-top {{ display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }}
   .tree-icon {{ width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; image-rendering: pixelated; }}
   .tree-name {{ font-size: 0.78rem; color: var(--text); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }}
@@ -566,6 +588,16 @@ def build():
       </div>
     </div>
 
+    <div class="filter-group">
+      <span class="filter-label">Por p&#xE1;gina</span>
+      <select class="page-size-select" id="pageSizeSelect">
+        <option value="25">25</option>
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="0">Todas</option>
+      </select>
+    </div>
+
   </div>
 </header>
 
@@ -610,7 +642,7 @@ let filterType   = 'all';
 let filterInput  = null;
 let filterOutput = null;
 let filterText   = '';
-const PAGE_SIZE  = 50;
+let pageSize     = 50;
 let currentPage  = 0;
 let filteredList = [];
 
@@ -749,9 +781,9 @@ function renderPage() {{
     return;
   }}
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  const start = currentPage * PAGE_SIZE;
-  const page  = filteredList.slice(start, start + PAGE_SIZE);
+  const totalPages = pageSize === 0 ? 1 : Math.ceil(total / pageSize);
+  const start = pageSize === 0 ? 0 : currentPage * pageSize;
+  const page  = pageSize === 0 ? filteredList : filteredList.slice(start, start + pageSize);
 
   const paginationHTML = totalPages > 1
     ? '<div class="pagination">' +
@@ -785,20 +817,30 @@ RECIPES.forEach(r => {{
   r.inputs.forEach(m => {{ if (m.code && !matCodeIndex.has(m.name)) matCodeIndex.set(m.name, m.code); }});
 }});
 
+function sortedRecipesFor(name) {{
+  return RECIPES.filter(r => r.output && r.output.name === name).sort((a, b) => {{
+    if (a.inputs.length !== b.inputs.length) return a.inputs.length - b.inputs.length;
+    return parseTime(a.time) - parseTime(b.time);
+  }});
+}}
+
 function findRecipeFor(name) {{
-  return RECIPES.find(r => r.output && r.output.name === name) || null;
+  const m = sortedRecipesFor(name);
+  return m.length ? m[0] : null;
 }}
 
 // ── Estado de la cadena activa ──
-let chainTree    = null;
-let chainExpanded = new Set();
-let chainRawH    = '';
+let chainTree            = null;
+let chainExpanded        = new Set();
+let chainRawH            = '';
+let chainRootRecipe      = null;
+let chainRecipeOverrides = new Map(); // nodeId → Recipe forzada
 
 function buildChainTree(name, qty, visited, forceRecipe, _id) {{
   if (_id === undefined) _id = 'root';
   if (!visited) visited = new Set();
   if (visited.has(name)) return {{ name, qty, cycle: true,  recipe: null, children: [], _id }};
-  const recipe = forceRecipe || findRecipeFor(name);
+  const recipe = forceRecipe || chainRecipeOverrides.get(_id) || findRecipeFor(name);
   if (!recipe)            return {{ name, qty, raw:   true,  recipe: null, children: [], _id }};
   const v2 = new Set(visited);
   v2.add(name);
@@ -929,6 +971,16 @@ function renderChainTree(tree, expanded) {{
       ? '<span class="node-toggle">&#x25B8; ver</span>'
       : '';
 
+    // "Next recipe" button — shown when there are multiple recipes for this material
+    const altRecipes = isExpandable ? sortedRecipesFor(n.name) : [];
+    const altCount   = altRecipes.length;
+    const curAltIdx  = altCount > 1 ? altRecipes.findIndex(r => r === n.recipe) + 1 : 0;
+    const safeName   = n.name.replace(/"/g, '&quot;');
+    const nextBtnH   = altCount > 1
+      ? '<button class="node-next-btn" data-next-node="' + n._id + '" data-node-name="' + safeName + '">'
+        + curAltIdx + '/' + altCount + ' &#x2192;</button>'
+      : '';
+
     // data-node-id only on non-root expandable nodes (root stays always expanded)
     const nodeId = (isExpandable && n._d !== 0) ? ' data-node-id="' + n._id + '"' : '';
 
@@ -939,7 +991,7 @@ function renderChainTree(tree, expanded) {{
           '<div class="tree-qty">&times; ' + n.qty + '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="tree-foot">' + badge + opH + toggleH + '</div>' +
+      '<div class="tree-foot">' + badge + opH + toggleH + nextBtnH + '</div>' +
     '</div>';
   }}).join('');
 
@@ -956,9 +1008,15 @@ function reRenderChain() {{
     renderChainTree(chainTree, chainExpanded) + chainRawH;
 }}
 
+function rebuildChainTree() {{
+  chainTree = buildChainTree(chainTree.name, chainTree.qty, null, chainRootRecipe);
+  reRenderChain();
+}}
+
 function openChain(outputName, qty, ridx) {{
-  const rootRecipe = (ridx >= 0 && ridx < RECIPES.length) ? RECIPES[ridx] : null;
-  chainTree     = buildChainTree(outputName, qty, null, rootRecipe);
+  chainRootRecipe      = (ridx >= 0 && ridx < RECIPES.length) ? RECIPES[ridx] : findRecipeFor(outputName);
+  chainRecipeOverrides = new Map();
+  chainTree     = buildChainTree(outputName, qty, null, chainRootRecipe);
   chainExpanded = new Set(['root']);
 
   const rawMap   = collectRawMats(chainTree);
@@ -1091,14 +1149,42 @@ document.addEventListener('DOMContentLoaded', () => {{
   document.getElementById('sortTimeBtn').addEventListener('click', () => toggleSort('time'));
   document.getElementById('sortQtyBtn').addEventListener('click',  () => toggleSort('qty'));
 
+  document.getElementById('pageSizeSelect').addEventListener('change', e => {{
+    pageSize = parseInt(e.target.value);
+    currentPage = 0;
+    renderPage();
+  }});
+
   // Click en card abre la cadena de producción
   document.getElementById('grid').addEventListener('click', e => {{
     const card = e.target.closest('.card');
     if (card) openChain(card.dataset.output, parseInt(card.dataset.qty) || 1, parseInt(card.dataset.ridx));
   }});
 
-  // Expandir / colapsar nodos de la cadena
+  // Interacción con nodos de la cadena
   document.getElementById('chainBody').addEventListener('click', e => {{
+    // Botón "siguiente receta"
+    const nextBtn = e.target.closest('[data-next-node]');
+    if (nextBtn) {{
+      e.stopPropagation();
+      const nodeId   = nextBtn.dataset.nextNode;
+      const nodeName = nextBtn.dataset.nodeName;
+      const matches  = sortedRecipesFor(nodeName);
+      const current  = nodeId === 'root'
+        ? chainRootRecipe
+        : (chainRecipeOverrides.get(nodeId) || findRecipeFor(nodeName));
+      const idx  = matches.findIndex(r => r === current);
+      const next = matches[(idx + 1) % matches.length];
+      // Limpiar overrides del nodo y sus descendientes
+      for (const key of [...chainRecipeOverrides.keys()]) {{
+        if (key === nodeId || key.startsWith(nodeId + '.')) chainRecipeOverrides.delete(key);
+      }}
+      if (nodeId === 'root') chainRootRecipe = next;
+      else chainRecipeOverrides.set(nodeId, next);
+      rebuildChainTree();
+      return;
+    }}
+    // Expandir / colapsar
     const card = e.target.closest('[data-node-id]');
     if (!card) return;
     const id = card.dataset.nodeId;
