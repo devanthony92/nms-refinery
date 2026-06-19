@@ -830,12 +830,13 @@ function buildChainTree(name, qty, visited, forceRecipe, _id) {
   return { name, qty, recipe, children, raw: false, cycle: false, _id };
 }
 
-function collectRawMats(node, acc) {
+function collectRawMats(node, acc, expanded) {
   if (!acc) acc = new Map();
-  if (node.raw || node.cycle) {
+  const isLeaf = node.raw || node.cycle || (expanded && !expanded.has(node._id));
+  if (isLeaf) {
     acc.set(node.name, (acc.get(node.name) || 0) + node.qty);
   } else {
-    node.children.forEach(c => collectRawMats(c, acc));
+    node.children.forEach(c => collectRawMats(c, acc, expanded));
   }
   return acc;
 }
@@ -982,7 +983,26 @@ function renderChainTree(tree, expanded) {
   '</div>';
 }
 
+function buildChainRawH(tree) {
+  const rawMap = collectRawMats(tree, null, chainExpanded);
+  const rawItemsH = [...rawMap.entries()].map(([n, q]) => {
+    const code = matCodeIndex.get(n);
+    const ico  = code
+      ? '<img style="width:22px;height:22px;object-fit:contain;image-rendering:pixelated" src="icons/' + code + '.png" onerror="hideImg(this)">'
+      : '';
+    return '<div class="raw-item">' + ico +
+      '<span class="chain-mat-name">' + t(n) + '</span>' +
+      '<span class="chain-mat-qty">&times; ' + q + '</span>' +
+    '</div>';
+  }).join('');
+  return rawMap.size
+    ? '<div class="raw-summary"><div class="raw-summary-title">Materiales base totales</div>' +
+      '<div class="raw-list">' + rawItemsH + '</div></div>'
+    : '';
+}
+
 function reRenderChain() {
+  chainRawH = buildChainRawH(chainTree);
   document.getElementById('chainBody').innerHTML =
     renderChainTree(chainTree, chainExpanded) + chainRawH;
 }
@@ -997,22 +1017,6 @@ function openChain(outputName, qty, ridx) {
   chainRecipeOverrides = new Map();
   chainTree     = buildChainTree(outputName, qty, null, chainRootRecipe);
   chainExpanded = new Set(['root']);
-
-  const rawMap   = collectRawMats(chainTree);
-  const rawItemsH = [...rawMap.entries()].map(([n, q]) => {
-    const code = matCodeIndex.get(n);
-    const ico  = code
-      ? '<img style="width:22px;height:22px;object-fit:contain;image-rendering:pixelated" src="icons/' + code + '.png" onerror="hideImg(this)">'
-      : '';
-    return '<div class="raw-item">' + ico +
-      '<span class="chain-mat-name">' + t(n) + '</span>' +
-      '<span class="chain-mat-qty">&times; ' + q + '</span>' +
-    '</div>';
-  }).join('');
-  chainRawH = rawMap.size
-    ? '<div class="raw-summary"><div class="raw-summary-title">Materiales base totales</div>' +
-      '<div class="raw-list">' + rawItemsH + '</div></div>'
-    : '';
 
   document.getElementById('chainTitle').textContent = 'Cadena: ' + t(outputName);
   reRenderChain();
